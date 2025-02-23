@@ -18,7 +18,7 @@ public class GetAlgae extends SequentialCommandGroup {
     Command driveToPose = new DriveToPose(null, drive); //TODO: get poses
 
     addCommands(
-      driveToPose,
+      // driveToPose,
       //TODO: pivot and elevator (from crane subsystem)
       Commands.runOnce(() -> m_handler.intakeAlgae()),
       Commands.waitUntil(() -> m_handler.isLoadedAlgae())

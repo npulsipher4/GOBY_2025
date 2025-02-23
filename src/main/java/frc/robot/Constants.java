@@ -44,7 +44,7 @@ public final class Constants {
 
   // Tunable constants are disabled unless this is set to true.
   // Intended to remain false in committed code.
-  public static final boolean kEnableTuning = false;
+  public static final boolean kEnableTuning = true;
 
   public static final class DriveConstants {
     public static final boolean kSquareInputs = false;
@@ -309,6 +309,7 @@ public final class Constants {
     public static final int kCoralIntake2 = 0;
     public static final int kCoralIntake5 = 90;
     public static final int kCoralIntake8 = 180;
+    public static final int kManualCraneMode = kRightJoy;
 
     public static final double kTriggerAcuationValue = 0.5;
     
@@ -459,10 +460,10 @@ public final class Constants {
     // hence the shared constant. Both pivot and elevator must be capable of this acceleration
     // for the crane to move smoothly.
     public static final double kAccelerationSeconds = 0.25;
-    public static final double kPivotMaxSpeedRadiansPerSecond = Math.PI;
+    public static final double kPivotMaxSpeedRadiansPerSecond = Math.PI/4.0;
     public static final double kPivotMaxAccelerationRadiansPerSecondSquared =
       kPivotMaxSpeedRadiansPerSecond / kAccelerationSeconds; // Do not change.
-    public static final double kElevatorMaxSpeedMetersPerSecond = 1.0;
+    public static final double kElevatorMaxSpeedMetersPerSecond = 0.25;
     public static final double kElevatorMaxAcccelerationMetersPerSecondSquared =
       kElevatorMaxSpeedMetersPerSecond / kAccelerationSeconds; // Do not change.
 
@@ -475,11 +476,11 @@ public final class Constants {
       ClosedLoopSlot.kSlot1
     );
     public static final SparkUtil.Config kPivotMotorConfig = new SparkUtil.Config(
-      20, // TODO: Configure.
+      40, // TODO: Configure.
       0.1, // TODO: Configure.
       false, // TODO: Find if the pivot motor is reversed
-      1.0, // TODO: Compute.
-      1.0, // TODO: Compute.
+      ((2.0*Math.PI)/75.0)/60.0,
+      (2.0*Math.PI)/75.0,
       Math.PI / 2.0,
       2.0 * Math.PI,
       new ArrayList<>() {{
@@ -487,9 +488,10 @@ public final class Constants {
         add(kPivotMotorVoltagePIDFSlot);
       }}
     );
-    public static final double kPivotHomingVoltage = 1.0; // TODO: Tune.
-    public static final double kPivotMinStalledHomingAmperage = 30.0; // TODO: Tune.
+    public static final double kPivotHomingVoltage = 0.5; // TODO: Tune.
+    public static final double kPivotMinStalledHomingAmperage = 20.0; // TODO: Tune.
 
+    public static final boolean kInvertLeftElevatorMotor = false;
     public static final SparkUtil.PIDFSlot kElevatorMotorVelocityPIDFSlot = new SparkUtil.PIDFSlot(
       new PIDF(0.0, 0.0, 0.0, 0.0), // TODO: Tune.
       ClosedLoopSlot.kSlot0
@@ -499,11 +501,11 @@ public final class Constants {
       ClosedLoopSlot.kSlot1
     );
     public static final SparkUtil.Config kElevatorMotorConfig = new SparkUtil.Config(
-      20, // TODO: Configure.
+      40, // TODO: Configure.
       0.1, // TODO: Configure.
-      true, // TODO: Find what elevator motor is reversed
-      1.0, // TODO: Compute.
-      1.0, // TODO: Compute.
+      kInvertLeftElevatorMotor, // TODO: Find what elevator motor is reversed
+      0.0116/60.0, // TODO: Compute.
+      0.0116, // TODO: Compute.
       1.0,
       4.0,
       new ArrayList<>() {{
@@ -511,8 +513,8 @@ public final class Constants {
         add(kElevatorMotorVoltagePIDFSlot);
       }}
     );
-    public static final double kElevatorHomingVoltage = 1.0; // TODO: Tune.
-    public static final double kElevatorMinStalledHomingAmperage = 30.0; // TODO: Tune.
+    public static final double kElevatorHomingVoltage = -0.5; // TODO: Tune.
+    public static final double kElevatorMinStalledHomingAmperage = 20.0; // TODO: Tune.
 
     public static final Crane.Tolerance kDefaultPivotTolerance = new Crane.Tolerance(
       Units.degreesToRadians(0.5),
@@ -536,23 +538,26 @@ public final class Constants {
     public static final double kElevatorMax = 1.400;
     public static final double kElevatorHiPivotHome = 1.250;
     public static final double kElevatorLoHiThreshold = 0.900;
-    public static final double kElevatorHomeRapid = 0.250;
-    public static final double kElevatorMin = 0.220;
-    public static final double kElevatorHome = kElevatorMin;
-    public static final double kElevatorHardMin = 0.201;
+    public static final double kElevatorHardMin = 0.283;
+    public static final double kElevatorHomeRapid = kElevatorHardMin + 0.05;
+    public static final double kElevatorSoftMin = kElevatorHardMin + 0.02;
+    public static final double kElevatorHome = kElevatorSoftMin;
+    // Actual elevator height for a distance sensor measurement of 0.
+    public static final double kDistanceSensorBaseMeasurement = kElevatorHardMin - 0.03;
+
 
     // Valid configuration space boundaries.
     public static final Segment kPivotLoBoundary = new Segment(
       new Translation2d(kPivotHiMin, kElevatorMax),
-      new Translation2d(kPivotLoMin, kElevatorMin)
+      new Translation2d(kPivotLoMin, kElevatorSoftMin)
     );
     public static final Segment kPivotHiBoundary = new Segment(
       new Translation2d(kPivotHiMax, kElevatorMax),
-      new Translation2d(kPivotLoMax, kElevatorMin)
+      new Translation2d(kPivotLoMax, kElevatorSoftMin)
     );
     public static final Segment kElevatorLoBoundary = new Segment(
-      new Translation2d(kPivotLoMin, kElevatorMin),
-      new Translation2d(kPivotLoMax, kElevatorMin)
+      new Translation2d(kPivotLoMin, kElevatorSoftMin),
+      new Translation2d(kPivotLoMax, kElevatorSoftMin)
     );
     public static final Segment kElevatorHiBoundary = new Segment(
       new Translation2d(kPivotHiMin, kElevatorMax),
@@ -564,9 +569,6 @@ public final class Constants {
       add(kElevatorLoBoundary);
       add(kElevatorHiBoundary);
     }};
-
-    // Actual elevator height for a distance sensor measurement of 0.
-    public static final double kDistanceSensorBaseMeasurement = 0.150; // TODO: Calibrate.
 
     public static final Translation2d kPositionHome =
       new Translation2d(kPivotHome, kElevatorHome);

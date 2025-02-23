@@ -1,5 +1,7 @@
 package frc.robot.utilities;
 
+import org.ejml.dense.block.MatrixOps_DDRB;
+
 public class TunablePIDF {
   private final TunableDouble m_p, m_i, m_d, m_ff;
   private PIDF m_pidf;
@@ -25,6 +27,10 @@ public class TunablePIDF {
   }
 
   public boolean hasChanged() {
+    if (m_p.hasChanged() || m_i.hasChanged() || m_d.hasChanged() || m_ff.hasChanged()) {
+      System.out.println(m_pidf);
+      System.out.printf("\nhasCHanged %s\n", m_pidf);
+    }
     return m_p.hasChanged() || m_i.hasChanged() || m_d.hasChanged() || m_ff.hasChanged();
   }
 }

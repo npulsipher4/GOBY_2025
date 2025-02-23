@@ -28,7 +28,7 @@ public class GetCoral extends SequentialCommandGroup {
     Command driveToPose = new DriveToPose(m_fieldPoseUtil.getTargetPoseAtStation(m_fieldPoseUtil.closestStation(m_drive.getPose()), subPose), drive);
 
     addCommands(
-      driveToPose,
+      // driveToPose,
       Commands.runOnce(() -> m_crane.moveTo(m_intakePos)),
       Commands.runOnce(() -> m_handler.intakeCoral()),
       Commands.waitUntil(() -> m_handler.isLoadedCoral()),
